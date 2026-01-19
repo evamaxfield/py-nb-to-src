@@ -25,6 +25,7 @@ repos:
         exclude: ^tests/fixtures/
         additional_dependencies:
           - "pytest"
+          - "tqdm"
 
   # Notebooks
   - repo: https://github.com/nbQA-dev/nbQA

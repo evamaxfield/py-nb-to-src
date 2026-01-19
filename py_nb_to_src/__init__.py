@@ -2,7 +2,13 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .converter import ConverterType, convert_directory, convert_ipynb, convert_rmd
+from .converter import (
+    ConverterType,
+    DirectoryConversionResult,
+    convert_directory,
+    convert_ipynb,
+    convert_rmd,
+)
 
 try:
     __version__ = version("py-nb-to-src")
@@ -14,6 +20,7 @@ __email__ = "evamxb@uw.edu"
 
 __all__ = [
     "ConverterType",
+    "DirectoryConversionResult",
     "__author__",
     "__email__",
     "__version__",

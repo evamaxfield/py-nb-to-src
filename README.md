@@ -55,3 +55,34 @@ from py_nb_to_src import convert_rmd
 output_path = convert_rmd("report.Rmd")
 # Returns: Path to report.r
 ```
+
+### Converting a Directory
+
+Convert all notebook files in a directory at once. Returns a `DirectoryConversionResult` containing successfully converted files and any failures with their tracebacks. A progress bar is displayed by default.
+
+```python
+from py_nb_to_src import convert_directory, ConverterType
+
+# Convert all supported files (both .ipynb and .Rmd)
+result = convert_directory("notebooks/")
+
+# Convert only Jupyter notebooks
+result = convert_directory("notebooks/", ConverterType.IPYNB)
+
+# Convert only R Markdown files
+result = convert_directory("notebooks/", ConverterType.RMD)
+
+# Disable progress bar
+result = convert_directory("notebooks/", show_progress=False)
+
+# Progress bar that disappears after completion
+result = convert_directory("notebooks/", progress_leave=False)
+
+# Access results
+for original, converted in result.converted.items():
+    print(f"{original} -> {converted}")
+
+# Check for failures
+for original, traceback in result.failed.items():
+    print(f"Failed to convert {original}:\n{traceback}")
+```

@@ -6,7 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from py_nb_to_src import ConverterType, convert_directory, convert_ipynb, convert_rmd
+from py_nb_to_src import (
+    ConverterType,
+    DirectoryConversionResult,
+    convert_directory,
+    convert_ipynb,
+    convert_rmd,
+)
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -143,10 +149,12 @@ def temp_directory_with_notebooks(tmp_path: Path) -> Path:
 )
 def test_convert_directory_both(temp_directory_with_notebooks: Path) -> None:
     """Test converting a directory with both converter types."""
-    results = convert_directory(temp_directory_with_notebooks, ConverterType.BOTH)
+    result = convert_directory(temp_directory_with_notebooks, ConverterType.BOTH)
 
-    assert len(results) == 2
-    for original, converted in results.items():
+    assert isinstance(result, DirectoryConversionResult)
+    assert len(result.converted) == 2
+    assert len(result.failed) == 0
+    for original, converted in result.converted.items():
         assert original.exists()
         assert converted.exists()
 
@@ -154,20 +162,22 @@ def test_convert_directory_both(temp_directory_with_notebooks: Path) -> None:
 @pytest.mark.skipif(not is_jupyter_available(), reason="jupyter not available")
 def test_convert_directory_ipynb_only(temp_directory_with_notebooks: Path) -> None:
     """Test converting only ipynb files in a directory."""
-    results = convert_directory(temp_directory_with_notebooks, ConverterType.IPYNB)
+    result = convert_directory(temp_directory_with_notebooks, ConverterType.IPYNB)
 
-    assert len(results) == 1
-    original = next(iter(results.keys()))
+    assert len(result.converted) == 1
+    assert len(result.failed) == 0
+    original = next(iter(result.converted.keys()))
     assert original.suffix == ".ipynb"
 
 
 @pytest.mark.skipif(not is_r_available(), reason="R/knitr not available")
 def test_convert_directory_rmd_only(temp_directory_with_notebooks: Path) -> None:
     """Test converting only Rmd files in a directory."""
-    results = convert_directory(temp_directory_with_notebooks, ConverterType.RMD)
+    result = convert_directory(temp_directory_with_notebooks, ConverterType.RMD)
 
-    assert len(results) == 1
-    original = next(iter(results.keys()))
+    assert len(result.converted) == 1
+    assert len(result.failed) == 0
+    original = next(iter(result.converted.keys()))
     assert original.suffix == ".Rmd"
 
 
@@ -180,6 +190,68 @@ def test_convert_directory_not_a_directory(tmp_path: Path) -> None:
 
 
 def test_convert_directory_empty(tmp_path: Path) -> None:
-    """Test converting an empty directory returns empty dict."""
-    results = convert_directory(tmp_path)
-    assert results == {}
+    """Test converting an empty directory returns empty result."""
+    result = convert_directory(tmp_path)
+    assert isinstance(result, DirectoryConversionResult)
+    assert result.converted == {}
+    assert result.failed == {}
+
+
+@pytest.mark.skipif(not is_jupyter_available(), reason="jupyter not available")
+def test_convert_directory_with_failures(tmp_path: Path) -> None:
+    """Test that failed conversions are captured with tracebacks."""
+    # Create an invalid notebook file
+    invalid_notebook = tmp_path / "invalid.ipynb"
+    invalid_notebook.write_text("not valid json")
+
+    result = convert_directory(tmp_path, ConverterType.IPYNB)
+
+    assert len(result.converted) == 0
+    assert len(result.failed) == 1
+    assert invalid_notebook in result.failed
+    assert "Traceback" in result.failed[invalid_notebook]
+
+
+PROBLEMATIC_FILENAMES = [
+    "file with spaces",
+    "file'with'quotes",
+    'file"with"double"quotes',
+    "file(with)parentheses",
+    "file$with$dollars",
+    "file&with&ampersands",
+    "file;with;semicolons",
+]
+
+
+@pytest.mark.skipif(not is_jupyter_available(), reason="jupyter not available")
+@pytest.mark.parametrize("filename", PROBLEMATIC_FILENAMES)
+def test_convert_ipynb_problematic_filename(tmp_path: Path, filename: str) -> None:
+    """Test converting notebooks with problematic filenames."""
+    src = FIXTURES_DIR / "sample_python.ipynb"
+    dst = tmp_path / f"{filename}.ipynb"
+    shutil.copy(src, dst)
+
+    result = convert_ipynb(dst)
+
+    assert result.exists()
+    assert result.suffix == ".py"
+    assert result.stem == filename
+    content = result.read_text()
+    assert "import os" in content
+
+
+@pytest.mark.skipif(not is_r_available(), reason="R/knitr not available")
+@pytest.mark.parametrize("filename", PROBLEMATIC_FILENAMES)
+def test_convert_rmd_problematic_filename(tmp_path: Path, filename: str) -> None:
+    """Test converting Rmd files with problematic filenames."""
+    src = FIXTURES_DIR / "sample.Rmd"
+    dst = tmp_path / f"{filename}.Rmd"
+    shutil.copy(src, dst)
+
+    result = convert_rmd(dst)
+
+    assert result.exists()
+    assert result.suffix == ".r"
+    assert result.stem == filename
+    content = result.read_text()
+    assert "library(stats)" in content

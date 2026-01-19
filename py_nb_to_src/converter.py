@@ -1,8 +1,12 @@
 """Functions for converting notebook files to source code files."""
 
 import subprocess
+import traceback
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+
+from tqdm import tqdm
 
 
 class ConverterType(Enum):
@@ -11,6 +15,24 @@ class ConverterType(Enum):
     IPYNB = "ipynb"
     RMD = "rmd"
     BOTH = "both"
+
+
+@dataclass
+class DirectoryConversionResult:
+    """Result of converting all notebook files in a directory.
+
+    Attributes
+    ----------
+    converted : dict[Path, Path]
+        Dictionary mapping successfully converted source file paths
+        to their output script paths.
+    failed : dict[Path, str]
+        Dictionary mapping file paths that failed to convert
+        to their error tracebacks.
+    """
+
+    converted: dict[Path, Path] = field(default_factory=dict)
+    failed: dict[Path, str] = field(default_factory=dict)
 
 
 KNITR_RMD_TO_R_CONVERSION_COMMAND = """
@@ -110,10 +132,32 @@ def convert_rmd(rmd_path: Path | str) -> Path:
     return output_r_path
 
 
+def _collect_files_to_convert(
+    directory: Path,
+    converter_type: ConverterType,
+) -> list[tuple[Path, str]]:
+    """Collect all notebook files in a directory based on converter type."""
+    files: list[tuple[Path, str]] = []
+    if converter_type in (ConverterType.IPYNB, ConverterType.BOTH):
+        files.extend((f, "ipynb") for f in directory.glob("*.ipynb"))
+    if converter_type in (ConverterType.RMD, ConverterType.BOTH):
+        files.extend((f, "rmd") for f in directory.glob("*.Rmd"))
+    return files
+
+
+def _convert_file(file_path: Path, file_type: str) -> Path:
+    """Convert a single file based on its type."""
+    if file_type == "ipynb":
+        return convert_ipynb(file_path)
+    return convert_rmd(file_path)
+
+
 def convert_directory(
     directory: Path | str,
     converter_type: ConverterType = ConverterType.BOTH,
-) -> dict[Path, Path]:
+    show_progress: bool = True,
+    progress_leave: bool = True,
+) -> DirectoryConversionResult:
     """
     Convert all notebook files in a directory to source scripts.
 
@@ -124,11 +168,17 @@ def convert_directory(
     converter_type : ConverterType
         Which converters to use: IPYNB (only .ipynb files), RMD (only .Rmd files),
         or BOTH (default, converts all supported file types).
+    show_progress : bool
+        Whether to display a progress bar (default True).
+    progress_leave : bool
+        Whether to leave the progress bar visible after completion (default True).
+        Set to False to remove the progress bar when done.
 
     Returns
     -------
-    dict[Path, Path]
-        Dictionary mapping original file paths to converted script paths.
+    DirectoryConversionResult
+        Dataclass containing successfully converted files and failed conversions
+        with their tracebacks.
 
     Raises
     ------
@@ -139,14 +189,24 @@ def convert_directory(
     if not directory.is_dir():
         raise NotADirectoryError(f"{directory} is not a directory")
 
-    results: dict[Path, Path] = {}
+    files_to_convert = _collect_files_to_convert(directory, converter_type)
+    result = DirectoryConversionResult()
 
-    if converter_type in (ConverterType.IPYNB, ConverterType.BOTH):
-        for ipynb_file in directory.glob("*.ipynb"):
-            results[ipynb_file] = convert_ipynb(ipynb_file)
+    if not files_to_convert:
+        return result
 
-    if converter_type in (ConverterType.RMD, ConverterType.BOTH):
-        for rmd_file in directory.glob("*.Rmd"):
-            results[rmd_file] = convert_rmd(rmd_file)
+    progress_bar = tqdm(
+        files_to_convert,
+        desc="Converting notebooks",
+        leave=progress_leave,
+        disable=not show_progress,
+    )
 
-    return results
+    for file_path, file_type in progress_bar:
+        progress_bar.set_description(f"Converting {file_path.name}")
+        try:
+            result.converted[file_path] = _convert_file(file_path, file_type)
+        except Exception:
+            result.failed[file_path] = traceback.format_exc()
+
+    return result

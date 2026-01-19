@@ -28,6 +28,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
   "nbconvert>=7",
+  "tqdm>=4",
 ]
 
 # extra dependencies
