@@ -127,6 +127,10 @@ index.md
 index_files/
 index.tex
 
+# Claude
+.claude/
+CLAUDE.md
+
 # Project specific
 
 # Ignored data files
