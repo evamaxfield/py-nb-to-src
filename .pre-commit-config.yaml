@@ -1,0 +1,33 @@
+repos:
+
+  # Standard Python Files
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.12.12
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+        types_or: [ python, pyi ]
+
+  # Revert to mypy if desired
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.17.1
+  #   hooks:
+  #     - id: mypy
+
+  - repo: https://github.com/NSPBot911/ty-pre-commit
+    rev: v0.0.12
+    hooks:
+      # Run the linter.
+      - id: ty-check
+        # additional_dependencies:
+        #   - "types-requests"
+
+  # Notebooks
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.9.1
+    hooks:
+      - id: nbqa-ruff-format
+      - id: nbqa-ruff-check
+      - id: nbqa-ruff
+        args: ["--fix"]

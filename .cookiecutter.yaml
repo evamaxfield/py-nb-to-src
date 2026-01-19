@@ -1,0 +1,8 @@
+default_context:
+    author_name: "Eva Maxfield Brown"
+    author_email: "evamxb@uw.edu"
+    hosting_github_username_or_org: "evamaxfield"
+    project_name: "py-nb-to-src"
+    project_slug: "py-nb-to-src"
+    python_slug: "py_nb_to_src"
+    project_short_description: "Convert Jupyter Notebooks (of all languages) and Rmd to their non-notebook counterparts."
