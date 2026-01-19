@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from py_nb_to_src import convert_ipynb, convert_rmd
+from py_nb_to_src import ConverterType, convert_directory, convert_ipynb, convert_rmd
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -74,6 +74,9 @@ def test_convert_ipynb_python(temp_python_notebook: Path) -> None:
     assert result.stem == "sample_python"
 
     content = result.read_text()
+    assert "import os" in content
+    assert "import sys" in content
+    assert "from pathlib import Path" in content
     assert "x = 1 + 1" in content
     assert "def hello():" in content
 
@@ -104,6 +107,8 @@ def test_convert_rmd(temp_rmd_file: Path) -> None:
     assert result.stem == "sample"
 
     content = result.read_text()
+    assert "library(stats)" in content
+    assert "library(utils)" in content
     assert "x <- 1 + 1" in content
     assert "hello <- function()" in content
 
@@ -122,3 +127,59 @@ def test_convert_rmd_file_not_found(tmp_path: Path) -> None:
     """Test that converting a non-existent Rmd file raises an error."""
     with pytest.raises(subprocess.CalledProcessError):
         convert_rmd(tmp_path / "nonexistent.Rmd")
+
+
+@pytest.fixture
+def temp_directory_with_notebooks(tmp_path: Path) -> Path:
+    """Create a temp directory with both notebook types."""
+    shutil.copy(FIXTURES_DIR / "sample_python.ipynb", tmp_path / "sample_python.ipynb")
+    shutil.copy(FIXTURES_DIR / "sample.Rmd", tmp_path / "sample.Rmd")
+    return tmp_path
+
+
+@pytest.mark.skipif(
+    not is_jupyter_available() or not is_r_available(),
+    reason="jupyter and R/knitr required",
+)
+def test_convert_directory_both(temp_directory_with_notebooks: Path) -> None:
+    """Test converting a directory with both converter types."""
+    results = convert_directory(temp_directory_with_notebooks, ConverterType.BOTH)
+
+    assert len(results) == 2
+    for original, converted in results.items():
+        assert original.exists()
+        assert converted.exists()
+
+
+@pytest.mark.skipif(not is_jupyter_available(), reason="jupyter not available")
+def test_convert_directory_ipynb_only(temp_directory_with_notebooks: Path) -> None:
+    """Test converting only ipynb files in a directory."""
+    results = convert_directory(temp_directory_with_notebooks, ConverterType.IPYNB)
+
+    assert len(results) == 1
+    original = next(iter(results.keys()))
+    assert original.suffix == ".ipynb"
+
+
+@pytest.mark.skipif(not is_r_available(), reason="R/knitr not available")
+def test_convert_directory_rmd_only(temp_directory_with_notebooks: Path) -> None:
+    """Test converting only Rmd files in a directory."""
+    results = convert_directory(temp_directory_with_notebooks, ConverterType.RMD)
+
+    assert len(results) == 1
+    original = next(iter(results.keys()))
+    assert original.suffix == ".Rmd"
+
+
+def test_convert_directory_not_a_directory(tmp_path: Path) -> None:
+    """Test that converting a non-directory raises an error."""
+    file_path = tmp_path / "not_a_dir.txt"
+    file_path.write_text("test")
+    with pytest.raises(NotADirectoryError):
+        convert_directory(file_path)
+
+
+def test_convert_directory_empty(tmp_path: Path) -> None:
+    """Test converting an empty directory returns empty dict."""
+    results = convert_directory(tmp_path)
+    assert results == {}
