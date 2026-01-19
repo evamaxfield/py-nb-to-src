@@ -39,15 +39,7 @@ dev = [
 ]
 lint = [
   "prek>=0.2.29",
-]
-modeling = [
-  "ipython",
-  "jupyterlab",
-  "matplotlib>=3.8.4",  # pinned for compatibility with colormaps
-  "opinionated>=0.0.3,<0.0.4",
-  "polars>=1",
-  "pyarrow>=12",
-  "seaborn>=0.13",
+  "ty>=0.0.12",
 ]
 
 [project.urls]
