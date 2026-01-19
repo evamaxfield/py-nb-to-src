@@ -13,9 +13,9 @@ __author__ = "Eva Maxfield Brown"
 __email__ = "evamxb@uw.edu"
 
 __all__ = [
-    "__version__",
     "__author__",
     "__email__",
+    "__version__",
     "convert_ipynb",
     "convert_rmd",
 ]

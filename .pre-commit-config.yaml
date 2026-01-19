@@ -20,8 +20,9 @@ repos:
     hooks:
       # Run the linter.
       - id: ty-check
-        # additional_dependencies:
-        #   - "types-requests"
+        exclude: ^tests/fixtures/
+        additional_dependencies:
+          - "pytest"
 
   # Notebooks
   - repo: https://github.com/nbQA-dev/nbQA

@@ -28,7 +28,7 @@ install:
 
 # lint, format, and check all files
 lint:
-	prek run
+	prek run --all-files
 
 # run all tests
 test:
