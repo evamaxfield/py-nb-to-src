@@ -25,8 +25,8 @@ jobs:
     - uses: extractions/setup-just@v3
     - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip wheel
-        pip install prek
+        python -m pip install --upgrade pip wheel uv
+        uv pip install --system .[lint]
     - name: Lint
       run: just lint
 
