@@ -52,5 +52,5 @@ release:
 # update this repo using latest cookiecutter
 update-from-cookiecutter:
 	pip install cookiecutter
-	cookiecutter gh:evamaxfield/cookiecutter-py-package --config-file .cookiecutter.yaml --no-input --overwrite-if-exists --output-dir ..
+	cookiecutter gh:evamaxfield/pyproject-template --config-file .cookiecutter.yaml --no-input --overwrite-if-exists --output-dir ..
 
