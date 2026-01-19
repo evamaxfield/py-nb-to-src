@@ -23,7 +23,7 @@ micromamba install -c conda-forge r-base r-knitr
 
 **After installing R, install knitr:**
 ```bash
-R -e "install.packages('knitr')"
+R -e "install.packages('knitr', repos='https://cloud.r-project.org')"
 ```
 
 ## Usage

@@ -24,7 +24,7 @@ clean:
 install:
 	pip install uv
 	uv pip install -e ".[dev,lint,modeling]"
-	R -e "install.packages('knitr')"
+	R -e "install.packages('knitr', repos='https://cloud.r-project.org')"
 
 # lint, format, and check all files
 lint:
