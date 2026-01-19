@@ -2,6 +2,8 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from .converter import convert_ipynb, convert_rmd
+
 try:
     __version__ = version("py-nb-to-src")
 except PackageNotFoundError:
@@ -9,3 +11,11 @@ except PackageNotFoundError:
 
 __author__ = "Eva Maxfield Brown"
 __email__ = "evamxb@uw.edu"
+
+__all__ = [
+    "__version__",
+    "__author__",
+    "__email__",
+    "convert_ipynb",
+    "convert_rmd",
+]

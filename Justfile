@@ -23,11 +23,16 @@ clean:
 # install with all deps
 install:
 	pip install uv
-	uv pip install -e ".[lint,modeling]"
+	uv pip install -e ".[dev,lint,modeling]"
+	R -e "install.packages('knitr')"
 
 # lint, format, and check all files
 lint:
 	prek run
+
+# run all tests
+test:
+	pytest
 
 ###############################################################################
 # Release and versioning

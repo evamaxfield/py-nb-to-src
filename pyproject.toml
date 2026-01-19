@@ -26,11 +26,16 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ]
 dynamic = ["version"]
-dependencies = []
+dependencies = [
+  "nbconvert>=7",
+]
 
 # extra dependencies
 # https://peps.python.org/pep-0621/#dependencies-optional-dependencies
 [project.optional-dependencies]
+dev = [
+  "pytest>=8",
+]
 lint = [
   "prek>=0.2.29",
 ]
