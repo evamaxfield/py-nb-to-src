@@ -25,8 +25,8 @@ jobs:
     - uses: extractions/setup-just@v3
     - name: Install Dependencies
       run: |
-        python -m pip install --upgrade pip wheel uv
-        uv pip install prek
+        python -m pip install --upgrade pip wheel
+        pip install prek
     - name: Lint
       run: just lint
 
@@ -52,8 +52,8 @@ jobs:
     - name: Install package
       shell: bash -el {0}
       run: |
-        python -m pip install --upgrade pip uv
-        uv pip install -e ".[dev]"
+        python -m pip install --upgrade pip
+        uv pip install --system -e ".[dev]"
     - name: Test
       shell: bash -el {0}
       run: just test
