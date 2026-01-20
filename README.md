@@ -33,7 +33,7 @@ R -e "install.packages('knitr', repos='https://cloud.r-project.org')"
 Convert any Jupyter notebook (.ipynb) to its source script. The output format depends on the kernel specified in the notebook (Python, R, Julia, etc.).
 
 ```python
-from py_nb_to_src import convert_ipynb
+from nb_to_src import convert_ipynb
 
 # Convert a Python notebook
 output_path = convert_ipynb("analysis.ipynb")
@@ -49,7 +49,7 @@ output_path = convert_ipynb("analysis_r.ipynb")
 Convert R Markdown (.Rmd) files to R scripts (.r) using knitr.
 
 ```python
-from py_nb_to_src import convert_rmd
+from nb_to_src import convert_rmd
 
 # Convert an Rmd file
 output_path = convert_rmd("report.Rmd")
@@ -61,7 +61,7 @@ output_path = convert_rmd("report.Rmd")
 Convert all notebook files in a directory at once. Returns a `DirectoryConversionResult` containing successfully converted files and any failures with their tracebacks. A progress bar is displayed by default.
 
 ```python
-from py_nb_to_src import convert_directory, ConverterType
+from nb_to_src import convert_directory, ConverterType
 
 # Convert all supported files (both .ipynb and .Rmd)
 result = convert_directory("notebooks/")

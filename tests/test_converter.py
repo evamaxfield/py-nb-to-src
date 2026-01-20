@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from py_nb_to_src import (
+from nb_to_src import (
     ConverterType,
     DirectoryConversionResult,
     convert_directory,

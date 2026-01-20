@@ -67,7 +67,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/py_nb_to_src.*rst
+docs/nb_to_src.*rst
 docs/modules.rst
 
 # PyBuilder

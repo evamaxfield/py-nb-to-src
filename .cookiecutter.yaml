@@ -4,5 +4,5 @@ default_context:
     hosting_github_username_or_org: "evamaxfield"
     project_name: "py-nb-to-src"
     project_slug: "py-nb-to-src"
-    python_slug: "py_nb_to_src"
+    python_slug: "nb_to_src"
     project_short_description: "Convert Jupyter Notebooks (of all languages) and Rmd to their non-notebook counterparts."

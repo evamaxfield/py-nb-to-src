@@ -1,4 +1,4 @@
-"""Top-level package for py_nb_to_src."""
+"""Top-level package for nb_to_src."""
 
 from importlib.metadata import PackageNotFoundError, version
 
