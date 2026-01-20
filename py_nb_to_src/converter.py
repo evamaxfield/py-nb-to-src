@@ -135,13 +135,16 @@ def convert_rmd(rmd_path: Path | str) -> Path:
 def _collect_files_to_convert(
     directory: Path,
     converter_type: ConverterType,
+    recursive: bool = False,
 ) -> list[tuple[Path, str]]:
     """Collect all notebook files in a directory based on converter type."""
     files: list[tuple[Path, str]] = []
+    ipynb_pattern = "**/*.ipynb" if recursive else "*.ipynb"
+    rmd_pattern = "**/*.Rmd" if recursive else "*.Rmd"
     if converter_type in (ConverterType.IPYNB, ConverterType.BOTH):
-        files.extend((f, "ipynb") for f in directory.glob("*.ipynb"))
+        files.extend((f, "ipynb") for f in directory.glob(ipynb_pattern))
     if converter_type in (ConverterType.RMD, ConverterType.BOTH):
-        files.extend((f, "rmd") for f in directory.glob("*.Rmd"))
+        files.extend((f, "rmd") for f in directory.glob(rmd_pattern))
     return files
 
 
@@ -155,6 +158,7 @@ def _convert_file(file_path: Path, file_type: str) -> Path:
 def convert_directory(
     directory: Path | str,
     converter_type: ConverterType = ConverterType.BOTH,
+    recursive: bool = False,
     show_progress: bool = True,
     progress_leave: bool = True,
 ) -> DirectoryConversionResult:
@@ -168,6 +172,9 @@ def convert_directory(
     converter_type : ConverterType
         Which converters to use: IPYNB (only .ipynb files), RMD (only .Rmd files),
         or BOTH (default, converts all supported file types).
+    recursive : bool
+        Whether to recursively search subdirectories for notebook files
+        (default False).
     show_progress : bool
         Whether to display a progress bar (default True).
     progress_leave : bool
@@ -189,7 +196,7 @@ def convert_directory(
     if not directory.is_dir():
         raise NotADirectoryError(f"{directory} is not a directory")
 
-    files_to_convert = _collect_files_to_convert(directory, converter_type)
+    files_to_convert = _collect_files_to_convert(directory, converter_type, recursive)
     result = DirectoryConversionResult()
 
     if not files_to_convert:

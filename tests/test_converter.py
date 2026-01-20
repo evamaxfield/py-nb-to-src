@@ -255,3 +255,56 @@ def test_convert_rmd_problematic_filename(tmp_path: Path, filename: str) -> None
     assert result.stem == filename
     content = result.read_text()
     assert "library(stats)" in content
+
+
+@pytest.fixture
+def temp_directory_with_nested_notebooks(tmp_path: Path) -> Path:
+    """Create a temp directory with notebooks in nested subdirectories."""
+    # Root level notebook
+    shutil.copy(FIXTURES_DIR / "sample_python.ipynb", tmp_path / "root.ipynb")
+
+    # Nested subdirectory with notebook
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    shutil.copy(FIXTURES_DIR / "sample_python.ipynb", subdir / "nested.ipynb")
+
+    # Deeply nested subdirectory with notebook
+    deep_subdir = subdir / "deep"
+    deep_subdir.mkdir()
+    shutil.copy(FIXTURES_DIR / "sample_python.ipynb", deep_subdir / "deep_nested.ipynb")
+
+    return tmp_path
+
+
+@pytest.mark.skipif(not is_jupyter_available(), reason="jupyter not available")
+def test_convert_directory_non_recursive(temp_directory_with_nested_notebooks: Path) -> None:
+    """Test that non-recursive mode only converts files in the root directory."""
+    result = convert_directory(
+        temp_directory_with_nested_notebooks,
+        ConverterType.IPYNB,
+        recursive=False,
+    )
+
+    assert len(result.converted) == 1
+    assert len(result.failed) == 0
+    converted_names = [p.name for p in result.converted.keys()]
+    assert "root.ipynb" in converted_names
+    assert "nested.ipynb" not in converted_names
+    assert "deep_nested.ipynb" not in converted_names
+
+
+@pytest.mark.skipif(not is_jupyter_available(), reason="jupyter not available")
+def test_convert_directory_recursive(temp_directory_with_nested_notebooks: Path) -> None:
+    """Test that recursive mode converts files in all subdirectories."""
+    result = convert_directory(
+        temp_directory_with_nested_notebooks,
+        ConverterType.IPYNB,
+        recursive=True,
+    )
+
+    assert len(result.converted) == 3
+    assert len(result.failed) == 0
+    converted_names = [p.name for p in result.converted.keys()]
+    assert "root.ipynb" in converted_names
+    assert "nested.ipynb" in converted_names
+    assert "deep_nested.ipynb" in converted_names
